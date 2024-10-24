@@ -1,0 +1,9 @@
+[Rotary PIN]
+
+- Clock : D2
+- DT : D3
+- SW : D4
+
+[OLED PIN]
+- SCL : A4
+- SDA : A5
