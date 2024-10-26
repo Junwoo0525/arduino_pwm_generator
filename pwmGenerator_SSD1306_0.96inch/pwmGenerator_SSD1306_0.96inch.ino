@@ -15,7 +15,7 @@ int sw = 4;
 int mode = 0;
 
 int pwm = 9;
-int32_t frequency = 240; //frequency (in Hz)
+int32_t frequency = 241; //frequency (in Hz)
 
 int pwmdutyper = 0;
 
@@ -157,7 +157,7 @@ void draw()
   //Frequencyh
   u8g.drawStr( 0, 20, "Hz :");
   u8g.setPrintPos(50, 20);
-  u8g.print(frequency);
+  u8g.print(frequency - 1);
 
   //DUTY
   u8g.drawStr(0, 40, "Duty :");
