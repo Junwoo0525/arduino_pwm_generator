@@ -63,6 +63,7 @@ void loop() {
       lcd.print("ON ");
       Serial.print("ON & duty : ");
       Serial.println(pwmdutyper);
+      pwmSW();
     }
     else {
       //setduty(0);
@@ -70,6 +71,7 @@ void loop() {
       lcd.setCursor(10, 1);
       lcd.print("OFF");
       Serial.println("OFF");
+      pwmSW();
     }
     while (1) {
       if (digitalRead(sw) == HIGH)
@@ -133,33 +135,42 @@ void readEncoder() {
   }
 }
 
+void pwmSW(){
+  if (out == true){
+    setduty(pwmdutyper);
+  }
+  else{
+    setduty(0);
+  }
+}
+
 void pwmMode() {
   lcd.setCursor(10, 0);
   switch (mode) {
     case 0:
       pwmdutyper = 0;
       lcd.print("0  ");
-      setduty(pwmdutyper);
+      pwmSW();
       break;
     case 1:
       pwmdutyper = 25;
       lcd.print("25 ");
-      setduty(pwmdutyper);
+      pwmSW();
       break;
     case 2:
       pwmdutyper = 50;
       lcd.print("50 ");
-      setduty(pwmdutyper);
+      pwmSW();
       break;
     case 3:
       pwmdutyper = 75;
       lcd.print("75 ");
-      setduty(pwmdutyper);
+      pwmSW();
       break;
     case 4:
       pwmdutyper = 100;
       lcd.print("100");
-      setduty(pwmdutyper);
+      pwmSW();
       break;
   }
 }
