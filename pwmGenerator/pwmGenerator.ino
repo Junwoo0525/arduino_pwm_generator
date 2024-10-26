@@ -1,7 +1,6 @@
-
-
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include <Encoder.h>
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -17,18 +16,14 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 #define CLK 2    // 2번핀을 CLK에 연결
 #define DT 3     // 3번핀을 DT에 연결
 
-
-int counter = 0;   // 카운팅 저장용 변수
-int currentStateCLK;     // 현재 CLK의 상태 저장용 변수
-int lastStateCLK;         // 이전 CLK의 상태 저장용 변수
-String currentDir = "";    // 현재 방향 출력용 문자열 변수
+Encoder myEnc(CLK, DT);
 
 int sw = 4;
 int mode = 0;
 
 String oled_size = "0.96";
 
-int32_t frequency = 240; //frequency (in Hz)
+int32_t frequency = 241; //frequency (in Hz)
 
 //PWM
 #include <PWM.h>
@@ -109,11 +104,10 @@ const unsigned char angchicken [] PROGMEM = {
 
 };
 
+long oldPosition  = 0;
+
 void setup() {
 
-  // 엔코더 핀 입력으로 설정
-  pinMode(CLK, INPUT);
-  pinMode(DT, INPUT);
   pinMode(sw, INPUT);
 
   InitTimersSafe();
@@ -127,13 +121,6 @@ void setup() {
   Serial.begin(9600);
   u8g2.begin();
 
-  // CLK핀의 최초 상태 저장
-  lastStateCLK = digitalRead(CLK);
-
-  //외부 인터럽트 등록, 핀의 상태가 변할 때(HIGH에서 LOW 또는 LOW에서 HIGH) 마다 updateEncoder함수가 실행됨.
-  // 인터럽트 0번은 2번핀과 연결되어 있고 1번은 3번 핀과 연결되어 있음
-  attachInterrupt(0, updateEncoder, CHANGE);
-  attachInterrupt(1, updateEncoder, CHANGE);
 
   //OLED
   /*u8g2.setFont(u8g_font_unifont);
@@ -153,24 +140,19 @@ void setup() {
 }
 
 void loop() {
-  
-
-
-
-
   if (digitalRead(sw) == LOW) {
     if (out == false) {
       setduty(pwmdutyper);
-      oledRun();
       out = true;
+      oledRun();
       Serial.print("ON & duty : ");
       Serial.println(pwmdutyper);
 
     }
     else {
       setduty(0);
-      oledRun();
       out = false;
+      oledRun();
       Serial.println("OFF");
     }
     while (1) {
@@ -178,6 +160,8 @@ void loop() {
         break;
     }
   }
+
+  readEncoder();
 
 }
 
@@ -196,17 +180,11 @@ int setduty(int dutyper) {
   pwmWrite(pwm, duty);
 }
 
-
-void updateEncoder() {  // 인터럽트 발생시 실행되는 함수
-  // CLK의 현재 상태를 읽어서
-  currentStateCLK = digitalRead(CLK);
-
-  // CLK핀의 신호가 바뀌었고(즉, 로터리엔코더의 회전이 발생했했고), 그 상태가 HIGH이면(최소 회전단위의 회전이 발생했다면)
-  if (currentStateCLK != lastStateCLK  && currentStateCLK == 1) {
-
-    // DT핀의 신호를 확인해서 엔코더의 회전 방향을 확인함.
-    if (digitalRead(DT) != currentStateCLK) {    // 신호가 다르다면 시계방향 회전
-      counter ++;                                // 카운팅 용 숫자 1 증가
+void readEncoder() {
+  long newPosition = myEnc.read();
+  long newPositionDiv4 = newPosition / 4;
+  if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
+    if (oldPosition > newPositionDiv4) {
       if (out == false) {
         if (mode >= 4) mode = 0;
         else mode++;
@@ -214,9 +192,8 @@ void updateEncoder() {  // 인터럽트 발생시 실행되는 함수
         pwmMode();
         oledRun();
       }
-      currentDir = "시계방향 회전";
-    } else {                                   // 신호가 같다면 반시계방향 회전
-      counter --;                              // 카운팅 용 숫자 1 감소
+    }
+    else if (oldPosition < newPositionDiv4) {
       if (out == false) {
         if (mode == 0) mode = 4;
         else mode--;
@@ -224,17 +201,13 @@ void updateEncoder() {  // 인터럽트 발생시 실행되는 함수
         pwmMode();
         oledRun();
       }
-      currentDir = "반시계 방향 회전";
     }
+    else {
+      Serial.println("error");
+    }
+    oldPosition = newPositionDiv4;
 
-    //    Serial.print("회전방향: ");
-    //    Serial.print(currentDir);               // 회전방향 출력
-    //    Serial.print(" | Counter: ");
-    //    Serial.println(counter);              // 카운팅 출력
   }
-
-  // 마지막 상태 변수 저장
-  lastStateCLK = currentStateCLK;
 }
 
 //OLED문자 출력 함수
@@ -251,7 +224,7 @@ void oledRun() {
       draw_96();
     }
   } while ( u8g2.nextPage() );
-  delay(10);
+  delay(1);
 }
 
 void pwmMode() {
@@ -279,7 +252,7 @@ void draw_13()
   //Frequencyh
   u8g2.drawStr( 0, 5, "Hz :");
   u8g2.setCursor(60, 5);
-  u8g2.print(frequency);
+  u8g2.print(frequency - 1);
   //u8g2.sendBuffer();
 
   //DUTY
