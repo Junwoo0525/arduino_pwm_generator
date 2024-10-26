@@ -88,7 +88,7 @@ int setduty(int dutyper) {
   pwmWrite(pwm, duty);
 }
 
-void readEncoder() {
+/*void readEncoder() {
   long newPosition = myEnc.read();
   long newPositionDiv4 = newPosition / 4;
   if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
@@ -126,6 +126,30 @@ void readEncoder() {
         Serial.println(mode);
         pwmMode();
       }
+    }
+    else {
+      Serial.println("error");
+    }
+    oldPosition = newPositionDiv4;
+
+  }
+} */
+
+void readEncoder() {
+  long newPosition = myEnc.read();
+  long newPositionDiv4 = newPosition / 4;
+  if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
+    if (oldPosition > newPositionDiv4) {
+        if (mode >= 4) mode = 0;
+        else mode++;
+        Serial.println(mode);
+        pwmMode();
+    }
+    else if (oldPosition < newPositionDiv4) {
+        if (mode == 0) mode = 4;
+        else mode--;
+        Serial.println(mode);
+        pwmMode();
     }
     else {
       Serial.println("error");
