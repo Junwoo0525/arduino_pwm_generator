@@ -30,6 +30,8 @@ void setup() {
   lcd.init();
   lcd.init();
 
+  lcd.backlight();
+
   pinMode(sw, INPUT);
 
   InitTimersSafe();
@@ -42,25 +44,26 @@ void setup() {
   // 시리얼 출력 개시
   Serial.begin(9600);
   
-  lcd.setCursor(10, 0);
-  lcd.print("0  ");
-  lcd.setCursor(10, 1);
-  lcd.print("OFF");
+  lcd.setCursor(1, 0);
+  lcd.print("Made by");
+  lcd.setCursor(5, 1);
+  lcd.print("Angchicken");
+
+  delay(1000);
+
+  lcd.setCursor(1, 0);
+  lcd.print("Duty(%) :   0");
+  lcd.setCursor(1, 1);
+  lcd.print("Output  : OFF   ");
 }
 
 void loop() {
-  lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Duty : ");
-  lcd.setCursor(0, 1);
-  lcd.print("Output : ");
-
   if (digitalRead(sw) == LOW) {
     if (out == false) {
       //setduty(pwmdutyper);
       out = true;
-      lcd.setCursor(10, 1);
-      lcd.print("ON ");
+      lcd.setCursor(11, 1);
+      lcd.print(" ON");
       Serial.print("ON & duty : ");
       Serial.println(pwmdutyper);
       pwmSW();
@@ -68,7 +71,7 @@ void loop() {
     else {
       //setduty(0);
       out = false;
-      lcd.setCursor(10, 1);
+      lcd.setCursor(11, 1);
       lcd.print("OFF");
       Serial.println("OFF");
       pwmSW();
@@ -140,13 +143,13 @@ void readEncoder() {
   long newPositionDiv4 = newPosition / 4;
   if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
     if (oldPosition > newPositionDiv4) {
-        if (mode >= 4) mode = 0;
+        if (mode >= 4) mode = 4;
         else mode++;
         Serial.println(mode);
         pwmMode();
     }
     else if (oldPosition < newPositionDiv4) {
-        if (mode == 0) mode = 4;
+        if (mode == 0) mode = 0;
         else mode--;
         Serial.println(mode);
         pwmMode();
@@ -169,26 +172,26 @@ void pwmSW(){
 }
 
 void pwmMode() {
-  lcd.setCursor(10, 0);
+  lcd.setCursor(11, 0);
   switch (mode) {
     case 0:
       pwmdutyper = 0;
-      lcd.print("0  ");
+      lcd.print("  0");
       pwmSW();
       break;
     case 1:
       pwmdutyper = 25;
-      lcd.print("25 ");
+      lcd.print(" 25");
       pwmSW();
       break;
     case 2:
       pwmdutyper = 50;
-      lcd.print("50 ");
+      lcd.print(" 50");
       pwmSW();
       break;
     case 3:
       pwmdutyper = 75;
-      lcd.print("75 ");
+      lcd.print(" 75");
       pwmSW();
       break;
     case 4:
