@@ -60,7 +60,6 @@ void setup() {
 void loop() {
   if (digitalRead(sw) == LOW) {
     if (out == false) {
-      //setduty(pwmdutyper);
       out = true;
       lcd.setCursor(11, 1);
       lcd.print(" ON");
@@ -69,7 +68,6 @@ void loop() {
       pwmSW();
     }
     else {
-      //setduty(0);
       out = false;
       lcd.setCursor(11, 1);
       lcd.print("OFF");
@@ -90,53 +88,6 @@ int setduty(int dutyper) {
   int duty = map(dutyper, 0, 99, 0, 255);
   pwmWrite(pwm, duty);
 }
-
-/*void readEncoder() {
-  long newPosition = myEnc.read();
-  long newPositionDiv4 = newPosition / 4;
-  if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
-    if (oldPosition > newPositionDiv4) {
-      if (encoderBuffer == 1){
-        encodercnt++;
-      }
-      else{
-        encodercnt = 0;
-      }
-      encoderBuffer = 1;
-      if (encodercnt > 1){
-        encodercnt = 0;
-        encoderBuffer = 0;
-        if (mode >= 4) mode = 0;
-        else mode++;
-        Serial.println(mode);
-        pwmMode();
-      }
-      
-    }
-    else if (oldPosition < newPositionDiv4) {
-      if (encoderBuffer == -1){
-        encodercnt++;
-      }
-      else{
-        encodercnt = 0;
-      }
-      encoderBuffer = -1;
-      if (encodercnt > 1){
-        encodercnt = 0;
-        encoderBuffer = 0;
-        if (mode == 0) mode = 4;
-        else mode--;
-        Serial.println(mode);
-        pwmMode();
-      }
-    }
-    else {
-      Serial.println("error");
-    }
-    oldPosition = newPositionDiv4;
-
-  }
-} */
 
 void readEncoder() {
   long newPosition = myEnc.read();
