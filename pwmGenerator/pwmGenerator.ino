@@ -87,7 +87,7 @@ void loop() {
 }
 
 int setduty(int dutyper) {
-  int duty = map(dutyper, 0, 100, 0, 255);
+  int duty = map(dutyper, 0, 99, 0, 255);
   pwmWrite(pwm, duty);
 }
 
@@ -195,7 +195,7 @@ void pwmMode() {
       pwmSW();
       break;
     case 4:
-      pwmdutyper = 100;
+      pwmdutyper = 99;
       lcd.print("100");
       pwmSW();
       break;
