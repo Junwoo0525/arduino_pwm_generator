@@ -11,6 +11,8 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 int sw = 4;
 int mode = 0;
+int encoderBuffer = 0;
+int encodercnt = 0;
 
 int32_t frequency = 241; //frequency (in Hz)
 
@@ -55,7 +57,7 @@ void loop() {
 
   if (digitalRead(sw) == LOW) {
     if (out == false) {
-      setduty(pwmdutyper);
+      //setduty(pwmdutyper);
       out = true;
       lcd.setCursor(10, 1);
       lcd.print("ON ");
@@ -63,7 +65,7 @@ void loop() {
       Serial.println(pwmdutyper);
     }
     else {
-      setduty(0);
+      //setduty(0);
       out = false;
       lcd.setCursor(10, 1);
       lcd.print("OFF");
@@ -89,15 +91,34 @@ void readEncoder() {
   long newPositionDiv4 = newPosition / 4;
   if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
     if (oldPosition > newPositionDiv4) {
-      if (out == false) {
+      if (encoderBuffer == 1){
+        encodercnt++;
+      }
+      else{
+        encodercnt = 0;
+      }
+      encoderBuffer = 1;
+      if (encodercnt > 1){
+        encodercnt = 0;
+        encoderBuffer = 0;
         if (mode >= 4) mode = 0;
         else mode++;
         Serial.println(mode);
         pwmMode();
       }
+      
     }
     else if (oldPosition < newPositionDiv4) {
-      if (out == false) {
+      if (encoderBuffer == -1){
+        encodercnt++;
+      }
+      else{
+        encodercnt = 0;
+      }
+      encoderBuffer = -1;
+      if (encodercnt > 1){
+        encodercnt = 0;
+        encoderBuffer = 0;
         if (mode == 0) mode = 4;
         else mode--;
         Serial.println(mode);
@@ -118,22 +139,27 @@ void pwmMode() {
     case 0:
       pwmdutyper = 0;
       lcd.print("0  ");
+      setduty(pwmdutyper);
       break;
     case 1:
       pwmdutyper = 25;
       lcd.print("25 ");
+      setduty(pwmdutyper);
       break;
     case 2:
       pwmdutyper = 50;
       lcd.print("50 ");
+      setduty(pwmdutyper);
       break;
     case 3:
       pwmdutyper = 75;
       lcd.print("75 ");
+      setduty(pwmdutyper);
       break;
     case 4:
       pwmdutyper = 100;
       lcd.print("100");
+      setduty(pwmdutyper);
       break;
   }
 }
