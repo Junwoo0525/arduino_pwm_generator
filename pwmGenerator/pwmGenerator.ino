@@ -11,6 +11,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 int sw = 4;
 int mode = 0;
+int modeOverflowCnt = 0;
 int encoderBuffer = 0;
 int encodercnt = 0;
 
@@ -43,7 +44,7 @@ void setup() {
 
   // 시리얼 출력 개시
   Serial.begin(9600);
-  
+
   lcd.setCursor(1, 0);
   lcd.print("Made by");
   lcd.setCursor(5, 1);
@@ -94,16 +95,42 @@ void readEncoder() {
   long newPositionDiv4 = newPosition / 4;
   if ((newPosition % 4 == 0) and (newPositionDiv4 != oldPosition)) {
     if (oldPosition > newPositionDiv4) {
-        if (mode >= 4) mode = 4;
-        else mode++;
-        Serial.println(mode);
-        pwmMode();
+      if (mode >= 4) {
+        if (modeOverflowCnt > 2) {
+          mode = 0;
+          Serial.println("mode overflow");
+          modeOverflowCnt = 0;
+        }
+        else {
+          mode = 4;
+          modeOverflowCnt++;
+        }
+      }
+      else {
+        mode++;
+        modeOverflowCnt = 0;
+      }
+      Serial.println(mode);
+      pwmMode();
     }
     else if (oldPosition < newPositionDiv4) {
-        if (mode == 0) mode = 0;
-        else mode--;
-        Serial.println(mode);
-        pwmMode();
+      if (mode <= 0) {
+        if (modeOverflowCnt > 2) {
+          mode = 4;
+          Serial.println("mode overflow");
+          modeOverflowCnt = 0;
+        }
+        else {
+          mode = 0;
+          modeOverflowCnt++;
+        }
+      }
+      else {
+        mode--;
+        modeOverflowCnt = 0;
+      }
+      Serial.println(mode);
+      pwmMode();
     }
     else {
       Serial.println("error");
@@ -113,11 +140,11 @@ void readEncoder() {
   }
 }
 
-void pwmSW(){
-  if (out == true){
+void pwmSW() {
+  if (out == true) {
     setduty(pwmdutyper);
   }
-  else{
+  else {
     setduty(0);
   }
 }
@@ -149,6 +176,8 @@ void pwmMode() {
       pwmdutyper = 99;
       lcd.print("100");
       pwmSW();
+      break;
+    default :
       break;
   }
 }
