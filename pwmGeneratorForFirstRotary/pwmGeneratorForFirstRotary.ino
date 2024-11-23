@@ -17,6 +17,8 @@ int encodercnt = 0;
 
 double sw_time_cur = 0;
 double sw_time_last = 0;
+int sw_filter_time = 200;
+
 
 int32_t frequency = 241; //frequency (in Hz)
 
@@ -36,7 +38,7 @@ void setup() {
 
   lcd.backlight();
 
-  pinMode(sw, INPUT_PULLUP);
+  pinMode(sw, INPUT);
 
   InitTimersSafe();
   bool success = SetPinFrequencySafe(pwm, frequency);
@@ -64,7 +66,7 @@ void setup() {
 void loop() {
   if (digitalRead(sw) == LOW) {
     sw_time_cur = millis();
-    if (sw_time_cur - sw_time_last > 200) {
+    if (sw_time_cur - sw_time_last > sw_filter_time) {
       sw_time_last = millis();
       if (out == false) {
         out = true;
