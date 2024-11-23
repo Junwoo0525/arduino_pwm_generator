@@ -15,6 +15,9 @@ int modeOverflowCnt = 0;
 int encoderBuffer = 0;
 int encodercnt = 0;
 
+double sw_time_cur = 0;
+double sw_time_last = 0;
+
 int32_t frequency = 241; //frequency (in Hz)
 
 //PWM
@@ -33,7 +36,7 @@ void setup() {
 
   lcd.backlight();
 
-  pinMode(sw, INPUT);
+  pinMode(sw, INPUT_PULLUP);
 
   InitTimersSafe();
   bool success = SetPinFrequencySafe(pwm, frequency);
@@ -60,20 +63,27 @@ void setup() {
 
 void loop() {
   if (digitalRead(sw) == LOW) {
-    if (out == false) {
-      out = true;
-      lcd.setCursor(11, 1);
-      lcd.print(" ON");
-      Serial.print("ON & duty : ");
-      Serial.println(pwmdutyper);
-      pwmSW();
+    sw_time_cur = millis();
+    if (sw_time_cur - sw_time_last > 200) {
+      sw_time_last = millis();
+      if (out == false) {
+        out = true;
+        lcd.setCursor(11, 1);
+        lcd.print(" ON");
+        Serial.print("ON & duty : ");
+        Serial.println(pwmdutyper);
+        pwmSW();
+      }
+      else {
+        out = false;
+        lcd.setCursor(11, 1);
+        lcd.print("OFF");
+        Serial.println("OFF");
+        pwmSW();
+      }
     }
-    else {
-      out = false;
-      lcd.setCursor(11, 1);
-      lcd.print("OFF");
-      Serial.println("OFF");
-      pwmSW();
+    else{
+      Serial.println("skiped!!");
     }
     while (1) {
       if (digitalRead(sw) == HIGH)
